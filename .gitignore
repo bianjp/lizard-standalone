@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# PyInstaller
+*.spec
+dist/
+build/
+
+# Virtual environments
+.venv/
+
+# Local configuration
+.python-version
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*~
+
+# AI tools
+.claude/
+.cursor/
+.codex/

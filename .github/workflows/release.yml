@@ -1,0 +1,93 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]*.[0-9]*.[0-9]*-[0-9]*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    permissions:
+      contents: read
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux-amd64
+            ext: ""
+          - os: windows-latest
+            target: windows-amd64
+            ext: ".exe"
+          - os: macos-15-intel
+            target: darwin-amd64
+            ext: ""
+          - os: macos-latest
+            target: darwin-arm64
+            ext: ""
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Build with PyInstaller
+        run: uv run pyinstaller --onefile --clean --name lizard main.py
+
+      - name: Prepare release artifacts
+        shell: bash
+        run: |
+          mkdir -p release
+
+          SRC="dist/lizard${{ matrix.ext }}"
+          DST="release/lizard-${{ matrix.target }}${{ matrix.ext }}"
+
+          cp -v "$SRC" "$DST"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lizard-${{ matrix.target }}
+          path: release/*
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release
+          merge-multiple: true
+
+      - name: Generate checksums
+        run: |
+          cd release
+          sha256sum lizard-* > SHA256SUMS.txt
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          generate_release_notes: true
+          fail_on_unmatched_files: true
