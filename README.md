@@ -21,49 +21,48 @@ Python environment**.
 
 ### Download a pre-built binary
 
-Grab the latest release for your platform from
-the [Releases](https://github.com/bianjp/lizard-standalone/releases) page.
+Each release ships a curated set of lizard versions for every platform. The asset name encodes both:
+`lizard-<VERSION>-<PLATFORM>`.
 
-| Platform                      | Asset                      |
-|-------------------------------|----------------------------|
-| Linux (x64)                   | `lizard-linux-amd64`       |
-| Windows (x64)                 | `lizard-windows-amd64.exe` |
-| macOS (x64 / Intel)           | `lizard-darwin-amd64`      |
-| macOS (ARM64 / Apple Silicon) | `lizard-darwin-arm64`      |
+To fetch the **latest build of a chosen lizard version**, use the stable `releases/latest/download/...`
+URL — it always points at the most recent release containing that version, with no scripting required:
 
 ```bash
-# Example: Linux
-# Rename the binary to `lizard` (or `lizard.exe` on Windows) for ease of use
-mv lizard-linux-amd64 lizard
+# Example: latest build of lizard 1.21.7 for Linux
+curl -L -o lizard https://github.com/bianjp/lizard-standalone/releases/latest/download/lizard-1.21.7-linux-amd64
 chmod +x lizard
 ./lizard --help
 ```
 
+Swap in your lizard version and platform suffix:
+
+| Platform                      | Platform suffix            |
+|-------------------------------|----------------------------|
+| Linux (x64)                   | `linux-amd64`              |
+| Windows (x64)                 | `windows-amd64.exe`        |
+| macOS (x64 / Intel)           | `darwin-amd64`             |
+| macOS (ARM64 / Apple Silicon) | `darwin-arm64`             |
+
+See the [Releases](https://github.com/bianjp/lizard-standalone/releases) page for the list of
+available lizard versions.
+
 > **macOS users:** Binaries downloaded from the browser may carry the `com.apple.quarantine`
 > extended attribute.
-> If a script calling the binary fails silently, run `xattr -cr ./lizard-darwin-*` once.
+> If a script calling the binary fails silently, run `xattr -cr ./lizard` once.
 
-### Pin to a specific version
+### Pin to a specific build
 
-Use the release tag to pin an exact version:
+The `releases/latest/download/...` URL moves forward as new releases are cut. To pin an **exact**
+build, use its date tag (`YYYY-MM-DD`):
 
 ```bash
-curl -LO https://github.com/bianjp/lizard-standalone/releases/download/v1.21.7-1/lizard-linux-amd64
-mv lizard-linux-amd64 lizard
+curl -L -o lizard https://github.com/bianjp/lizard-standalone/releases/download/2026-06-18/lizard-1.21.7-linux-amd64
 chmod +x lizard
 ```
 
-### Always fetch the latest build of a given lizard version
-
-```bash
-VERSION="1.21.7"
-LATEST_TAG=$(curl -s "https://api.github.com/repos/bianjp/lizard-standalone/releases" \
-  | jq -r "[.[] | select(.tag_name | startswith(\"v${VERSION}\"))] | first | .tag_name")
-
-curl -LO "https://github.com/bianjp/lizard-standalone/releases/download/${LATEST_TAG}/lizard-linux-amd64"
-mv lizard-linux-amd64 lizard
-chmod +x lizard
-```
+> **Note:** once a lizard version is removed from the curated list, its
+> `releases/latest/download/lizard-<VERSION>-...` URL stops resolving. Pin a date-tagged release that
+> still contains it.
 
 ### Build from source
 
@@ -117,24 +116,20 @@ uv run pyinstaller --onefile --name lizard main.py
 
 ## Release process
 
-Version tags follow the pattern `v{LIZARD_VERSION}-{BUILD_NUMBER}`, where the build number starts
-from 1.
-
-| Tag         | Meaning                                 |
-|-------------|-----------------------------------------|
-| `v1.21.7-1` | First build based on lizard 1.21.7      |
-| `v1.21.7-2` | Packaging / CI fix; lizard still 1.21.7 |
-| `v1.21.8-1` | New upstream lizard version             |
+Releases are tagged by date (`YYYY-MM-DD`), and each release ships every lizard version listed in
+[`lizard-versions.txt`](./lizard-versions.txt) for all supported platforms. The lizard version lives
+in the asset filename, not the tag.
 
 ```bash
-# 1. Update lizard version in pyproject.toml if needed
+# 1. Edit lizard-versions.txt to add/remove a lizard version (if needed)
 # 2. Commit and push
-# 3. Create and push a tag
-git tag v1.21.7-1
-git push origin v1.21.7-1
+# 3. Create and push a date tag
+git tag 2026-06-18
+git push origin 2026-06-18
 ```
 
-GitHub Actions will build for all platforms and create a release automatically.
+GitHub Actions builds every listed version × platform and attaches the artifacts to a release
+automatically. Same-day rebuilds use a `-N` suffix (e.g. `2026-06-18-1`).
 
 ---
 

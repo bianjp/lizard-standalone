@@ -1,0 +1,3 @@
+# lizard versions shipped in each release (newest first)
+1.21.7
+1.17.10
