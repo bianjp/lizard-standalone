@@ -50,7 +50,7 @@ jobs:
         run: pip install "lizard==${{ matrix.lizard_version }}" "pyinstaller>=6.0"
 
       - name: Build with PyInstaller
-        run: python -m PyInstaller --onefile --clean --name lizard main.py
+        run: python -m PyInstaller --onefile --clean --name lizard --collect-submodules lizard_ext main.py
 
       - name: Prepare release artifacts
         shell: bash

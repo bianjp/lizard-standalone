@@ -70,7 +70,7 @@ Requires [uv](https://docs.astral.sh/uv/).
 
 ```bash
 uv sync
-uv run pyinstaller --onefile --name lizard main.py
+uv run pyinstaller --onefile --name lizard --collect-submodules lizard_ext main.py
 # → dist/lizard
 ```
 
@@ -109,7 +109,7 @@ uv sync
 uv run python main.py --help
 
 # Build locally
-uv run pyinstaller --onefile --name lizard main.py
+uv run pyinstaller --onefile --name lizard --collect-submodules lizard_ext main.py
 ```
 
 ---
@@ -138,6 +138,8 @@ automatically. Same-day rebuilds use a `-N` suffix (e.g. `2026-06-18-1`).
 - `main.py` is a thin wrapper around `lizard.main()`.
 - `multiprocessing.freeze_support()` is called so that `lizard`'s internal `multiprocessing.Pool`
   works correctly inside a PyInstaller bundle.
+- PyInstaller is invoked with `--collect-submodules lizard_ext` so dynamically loaded extensions
+  (e.g. `lizard_ext.lizardmodified` for `-m`) are included in the bundle.
 - GitHub Actions builds the binary on native runners for every supported platform and attaches the
   artifacts to releases automatically.
 
