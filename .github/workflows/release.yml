@@ -41,15 +41,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Linux: use Python Build Standalone (via uv) instead of actions/setup-python so
+      # the bundled libpython only requires glibc 2.17+, not the newer glibc tied to
+      # official CPython builds on ubuntu-latest (e.g. 2.38 for Python 3.14).
+      - name: Install uv and Python (build-standalone)
+        if: runner.os == 'Linux'
+        uses: astral-sh/setup-uv@v8.2.0
+        with:
+          python-version: "3.14"
+          enable-cache: true
+
       - name: Setup Python
+        if: runner.os != 'Linux'
         uses: actions/setup-python@v5
         with:
           python-version: "3.14"
 
+      - name: Create virtual environment (Linux)
+        if: runner.os == 'Linux'
+        run: uv venv --python 3.14
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: uv pip install "lizard==${{ matrix.lizard_version }}" "pyinstaller>=6.0"
+
       - name: Install dependencies
+        if: runner.os != 'Linux'
         run: pip install "lizard==${{ matrix.lizard_version }}" "pyinstaller>=6.0"
 
+      - name: Build with PyInstaller (Linux)
+        if: runner.os == 'Linux'
+        run: uv run python -m PyInstaller --onefile --clean --name lizard --collect-submodules lizard_ext main.py
+
       - name: Build with PyInstaller
+        if: runner.os != 'Linux'
         run: python -m PyInstaller --onefile --clean --name lizard --collect-submodules lizard_ext main.py
 
       - name: Prepare release artifacts

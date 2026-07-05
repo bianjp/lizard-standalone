@@ -46,6 +46,12 @@ Swap in your lizard version and platform suffix:
 See the [Releases](https://github.com/bianjp/lizard-standalone/releases) page for the list of
 available lizard versions.
 
+> **Linux users:** Pre-built Linux binaries require **glibc 2.17+** (e.g. CentOS/RHEL 7+, Ubuntu
+> 14.04+, Debian 8+). CI builds use
+> [Python Build Standalone](https://github.com/astral-sh/python-build-standalone) so the PyInstaller
+> bundle does not inherit the newer glibc requirement of official CPython on recent Ubuntu runners.
+> Check with `ldd --version` if you see `GLIBC_2.xx not found` errors.
+
 > **macOS users:** Binaries downloaded from the browser may carry the `com.apple.quarantine`
 > extended attribute.
 > If a script calling the binary fails silently, run `xattr -cr ./lizard` once.
@@ -140,6 +146,11 @@ automatically. Same-day rebuilds use a `-N` suffix (e.g. `2026-06-18-1`).
   works correctly inside a PyInstaller bundle.
 - PyInstaller is invoked with `--collect-submodules lizard_ext` so dynamically loaded extensions
   (e.g. `lizard_ext.lizardmodified` for `-m`) are included in the bundle.
+- On **Linux**, CI installs Python via [uv](https://docs.astral.sh/uv/) from
+  [Python Build Standalone](https://github.com/astral-sh/python-build-standalone/releases) rather
+  than `actions/setup-python`. PyInstaller embeds the build-time `libpython`, so this keeps the
+  minimum glibc at **2.17** instead of the higher version required by official CPython 3.14 on
+  recent Ubuntu. Windows and macOS still use `actions/setup-python`.
 - GitHub Actions builds the binary on native runners for every supported platform and attaches the
   artifacts to releases automatically.
 
