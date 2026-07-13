@@ -69,9 +69,11 @@ jobs:
         if: runner.os != 'Linux'
         run: pip install "lizard==${{ matrix.lizard_version }}" "pyinstaller>=6.0"
 
+      # --no-project: do not sync pyproject.toml/uv.lock (which pins a single lizard
+      # version) over the matrix-selected version installed above.
       - name: Build with PyInstaller (Linux)
         if: runner.os == 'Linux'
-        run: uv run python -m PyInstaller --onefile --clean --name lizard --collect-submodules lizard_ext main.py
+        run: uv run --no-project python -m PyInstaller --onefile --clean --name lizard --collect-submodules lizard_ext main.py
 
       - name: Build with PyInstaller
         if: runner.os != 'Linux'
