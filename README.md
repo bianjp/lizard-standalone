@@ -46,11 +46,24 @@ Swap in your lizard version and platform suffix:
 See the [Releases](https://github.com/bianjp/lizard-standalone/releases) page for the list of
 available lizard versions.
 
-> **Linux users:** Pre-built Linux binaries require **glibc 2.17+** (e.g. CentOS/RHEL 7+, Ubuntu
-> 14.04+, Debian 8+). CI builds use
-> [Python Build Standalone](https://github.com/astral-sh/python-build-standalone) so the PyInstaller
-> bundle does not inherit the newer glibc requirement of official CPython on recent Ubuntu runners.
-> Check with `ldd --version` if you see `GLIBC_2.xx not found` errors.
+#### System requirements
+
+Binaries are built with [CPython 3.14](https://www.python.org/downloads/release/python-3140/) and
+[PyInstaller](https://pyinstaller.org/), so the minimum OS version follows what CPython 3.14 itself
+requires on each platform (except Linux, where an older glibc is retained — see below).
+
+| Platform                      | Minimum OS version                                    |
+|-------------------------------|-------------------------------------------------------|
+| Linux (x64)                   | glibc 2.17+ (CentOS/RHEL 7+, Ubuntu 14.04+, Debian 8+) |
+| Windows (x64)                 | Windows 10                                            |
+| macOS (x64 / Intel)           | macOS 11 (Big Sur)                                    |
+| macOS (ARM64 / Apple Silicon) | macOS 11 (Big Sur)                                    |
+
+> **Linux users:** CI builds Linux binaries with
+> [Python Build Standalone](https://github.com/astral-sh/python-build-standalone) (via uv) instead of
+> the official CPython, so the bundled `libpython` only requires **glibc 2.17+** rather than the
+> newer glibc (e.g. 2.38) tied to official CPython 3.14 on `ubuntu-latest`. Check with
+> `ldd --version` if you see `GLIBC_2.xx not found` errors.
 
 > **macOS users:** Binaries downloaded from the browser may carry the `com.apple.quarantine`
 > extended attribute.
@@ -150,7 +163,10 @@ automatically. Same-day rebuilds use a `-N` suffix (e.g. `2026-06-18-1`).
   [Python Build Standalone](https://github.com/astral-sh/python-build-standalone/releases) rather
   than `actions/setup-python`. PyInstaller embeds the build-time `libpython`, so this keeps the
   minimum glibc at **2.17** instead of the higher version required by official CPython 3.14 on
-  recent Ubuntu. Windows and macOS still use `actions/setup-python`.
+  recent Ubuntu.
+- On **Windows and macOS**, CI uses `actions/setup-python` with official CPython 3.14. The minimum
+  OS version therefore follows CPython 3.14's own requirements: **Windows 10** and **macOS 11 (Big
+  Sur)**. See [System requirements](#system-requirements) above for the full table.
 - GitHub Actions builds the binary on native runners for every supported platform and attaches the
   artifacts to releases automatically.
 
